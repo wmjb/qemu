@@ -60,6 +60,8 @@ enum {
     VIRT_GIC_REDIST,
     VIRT_SMMU,
     VIRT_UART0,
+    VIRT_EHCI,
+    VIRT_SDHCI,
     VIRT_MMIO,
     VIRT_RTC,
     VIRT_FW_CFG,
@@ -179,6 +181,11 @@ struct VirtMachineState {
 };
 
 #define VIRT_ECAM_ID(high) (high ? VIRT_HIGH_PCIE_ECAM : VIRT_PCIE_ECAM)
+
+/* 
+ * Copied from SDHC_CAPAB_REG_DEFAULT 
+ */
+#define VIRT_SDHCI_CAPABILITIES 0x057834b4
 
 #define TYPE_VIRT_MACHINE   MACHINE_TYPE_NAME("virt")
 OBJECT_DECLARE_TYPE(VirtMachineState, VirtMachineClass, VIRT_MACHINE)
