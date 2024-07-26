@@ -1,0 +1,91 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { icon: '🟦', sys: mingw64 }
+    name: 🚧${{ matrix.icon }} ${{ matrix.sys }}
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+
+    - name: '🧰 Checkout'
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: '${{ matrix.icon }} Setup MSYS2'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: true
+        install: >-
+          git
+          make
+          bison
+          diffutils
+          flex
+          grep
+          sed
+          base-devel
+          python
+          python-setuptools
+        pacboy: >-
+          toolchain:p
+          binutils:p
+          capstone:p
+          ccache:p
+          curl:p
+          cyrus-sasl:p
+          dtc:p
+          gcc:p
+          glib2:p
+          gnutls:p
+          gtk3:p
+          libgcrypt:p
+          libjpeg-turbo:p
+          libnfs:p
+          libpng:p
+          libssh:p
+          libtasn1:p
+          libusb:p
+          lzo2:p
+          nettle:p
+          ninja:p
+          pixman:p
+          pkgconf:p
+          python:p
+          SDL2:p
+          SDL2_image:p
+          snappy:p
+          spice:p
+          usbredir:p
+          zstd:p
+          libslirp:p
+    - name: '🚧 Build qemu (arm/aarch64)'
+      run: |
+          ./configure --enable-gtk --enable-sdl --enable-fdt=system --enable-avx2 --target-list=arm-softmmu,aarch64-softmmu
+          make -j64
+          
+    - name: Prepare Artifacts
+      shell: cmd
+      run: |
+          mkdir ${{ github.workspace }}\artifacts
+          move D:\a\qemu\qemu\build ${{ github.workspace }}\artifacts
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4.3.4
+      with:
+        name: artifact
+        path: ${{ github.workspace }}/artifacts
