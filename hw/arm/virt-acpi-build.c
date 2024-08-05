@@ -138,7 +138,6 @@ static void acpi_dsdt_add_ehci(Aml *scope, const MemMapEntry *ehci_memmap,
     aml_append(scope, dev);
 }
 
-/*
 static void acpi_dsdt_add_pci(Aml *scope, const MemMapEntry *memmap,
                               uint32_t irq, VirtMachineState *vms)
 {
@@ -157,7 +156,6 @@ static void acpi_dsdt_add_pci(Aml *scope, const MemMapEntry *memmap,
 
     acpi_dsdt_add_gpex(scope, &cfg);
 }
-*/
 
 static void acpi_dsdt_add_mmci(Aml *scope, const MemMapEntry *sdhci_memmap,
                               uint32_t sdhci_irq)
@@ -888,7 +886,7 @@ build_dsdt(GArray *table_data, BIOSLinker *linker, VirtMachineState *vms)
     virtio_acpi_dsdt_add(scope, memmap[VIRT_MMIO].base, memmap[VIRT_MMIO].size,
                          (irqmap[VIRT_MMIO] + ARM_SPI_BASE),
                          0, NUM_VIRTIO_TRANSPORTS);
-    // acpi_dsdt_add_pci(scope, memmap, irqmap[VIRT_PCIE] + ARM_SPI_BASE, vms);
+    acpi_dsdt_add_pci(scope, memmap, irqmap[VIRT_PCIE] + ARM_SPI_BASE, vms);
     acpi_dsdt_add_ehci(scope, &memmap[VIRT_EHCI], irqmap[VIRT_EHCI] + ARM_SPI_BASE);
     acpi_dsdt_add_mmci(scope, &memmap[VIRT_SDHCI], irqmap[VIRT_SDHCI] + ARM_SPI_BASE);
     if (vms->acpi_dev) {
