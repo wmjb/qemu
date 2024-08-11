@@ -1,0 +1,1 @@
+HRESULT WINAPI PathCchSkipRoot2(const WCHAR* path, const WCHAR** root_end);
