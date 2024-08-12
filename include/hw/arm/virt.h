@@ -154,6 +154,9 @@ struct VirtMachineState {
     bool mte;
     bool dtb_randomness;
     bool second_ns_uart_present;
+    bool pci;
+    bool force_el3;
+    bool force_psci;
     OnOffAuto acpi;
     VirtGICType gic_version;
     VirtIOMMUType iommu;

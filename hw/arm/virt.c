@@ -2279,9 +2279,9 @@ static void machvirt_init(MachineState *machine)
 
         aarch64 &= object_property_get_bool(cpuobj, "aarch64", NULL);
 
-        /* Enable EL3 even when secure=false, for Windows on ARM 32-Bit
-           Note: proper TrustZone with ATF+EDK2 does not work as of now */
-        object_property_set_bool(cpuobj, "has_el3", true, NULL);
+        if (!vms->secure && !vms->force_el3) {
+            object_property_set_bool(cpuobj, "has_el3", false, NULL);
+        }
 
         if (!vms->virt && object_property_find(cpuobj, "has_el2")) {
             object_property_set_bool(cpuobj, "has_el2", false, NULL);
@@ -2475,6 +2475,7 @@ static void machvirt_init(MachineState *machine)
     vms->bootinfo.skip_dtb_autoload = true;
     vms->bootinfo.firmware_loaded = firmware_loaded;
     vms->bootinfo.psci_conduit = vms->psci_conduit;
+    vms->bootinfo.force_psci = vms->force_psci;
     arm_load_kernel(ARM_CPU(first_cpu), machine, &vms->bootinfo);
 
     vms->machine_done.notify = virt_machine_done;
@@ -2784,6 +2785,48 @@ static void virt_set_default_bus_bypass_iommu(Object *obj, bool value,
     VirtMachineState *vms = VIRT_MACHINE(obj);
 
     vms->default_bus_bypass_iommu = value;
+}
+
+static bool virt_get_pci(Object *obj, Error **errp)
+{
+    VirtMachineState *vms = VIRT_MACHINE(obj);
+
+    return vms->pci;
+}
+
+static void virt_set_pci(Object *obj, bool value, Error **errp)
+{
+    VirtMachineState *vms = VIRT_MACHINE(obj);
+
+    vms->pci = value;
+}
+
+static bool virt_get_force_el3(Object *obj, Error **errp)
+{
+    VirtMachineState *vms = VIRT_MACHINE(obj);
+
+    return vms->force_el3;
+}
+
+static void virt_set_force_el3(Object *obj, bool value, Error **errp)
+{
+    VirtMachineState *vms = VIRT_MACHINE(obj);
+
+    vms->force_el3 = value;
+}
+
+static bool virt_get_force_psci(Object *obj, Error **errp)
+{
+    VirtMachineState *vms = VIRT_MACHINE(obj);
+
+    return vms->force_psci;
+}
+
+static void virt_set_force_psci(Object *obj, bool value, Error **errp)
+{
+    VirtMachineState *vms = VIRT_MACHINE(obj);
+
+    vms->force_psci = value;
 }
 
 static CpuInstanceProperties
@@ -3267,7 +3310,26 @@ static void virt_machine_class_init(ObjectClass *oc, void *data)
                                           "Override the default value of field OEM Table ID "
                                           "in ACPI table header."
                                           "The string may be up to 8 bytes in size");
-
+ 
+    object_class_property_add_bool(oc, "pci",
+                                   virt_get_pci,
+                                   virt_set_pci);
+    object_class_property_set_description(oc, "pci",
+                                          "Enable PCI bus");
+ 
+ 
+    object_class_property_add_bool(oc, "force-el3",
+                                   virt_get_force_el3,
+                                   virt_set_force_el3);
+    object_class_property_set_description(oc, "force-el3",
+                                          "Force enable EL3 even when secure is false");
+ 
+ 
+    object_class_property_add_bool(oc, "force-psci",
+                                   virt_get_force_psci,
+                                   virt_set_force_psci);
+    object_class_property_set_description(oc, "force-psci",
+                                          "Enable QEMU's builtin PSCI emulation even when EL3 is enabled");
 }
 
 static void virt_instance_init(Object *obj)
@@ -3327,6 +3389,10 @@ static void virt_instance_init(Object *obj)
 
     vms->oem_id = g_strndup(ACPI_BUILD_APPNAME6, 6);
     vms->oem_table_id = g_strndup(ACPI_BUILD_APPNAME8, 8);
+    
+    vms->pci = true;
+    vms->force_el3 = false;
+    vms->force_psci = false;
 }
 
 static const TypeInfo virt_machine_info = {

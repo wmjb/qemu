@@ -59,7 +59,7 @@ static bool aprofile_require_alignment(CPUARMState *env, int el, uint64_t sctlr)
         /* Stage 2 translation enabled: memory type in PTE. */
         return false;
     }
-    return false;
+    return true;
 #endif
 }
 
@@ -160,7 +160,9 @@ static CPUARMTBFlags rebuild_hflags_a32(CPUARMState *env, int fp_el,
     int el = arm_current_el(env);
     uint64_t sctlr = arm_sctlr(env, el);
 
-    if (aprofile_require_alignment(env, el, sctlr)) {
+    // Rollback enforced memory alignment to run Windows on ARM 32-bit
+    // if (aprofile_require_alignment(env, el, sctlr)) {
+    if (sctlr & SCTLR_A) {
         DP_TBFLAG_ANY(flags, ALIGN_MEM, 1);
     }
 

@@ -184,6 +184,15 @@ dtb-randomness
 dtb-kaslr-seed
   A deprecated synonym for dtb-randomness.
 
+pci
+  Set ``on``/``off`` to enable/disable PCI bus. The default is ``on``
+
+force_el3
+  Set ``on``/``off`` to enable/disable EL3 without secure. The default is ``off``
+
+force_psci
+  Set ``on``/``off`` to enable/disable builtin PSCI emulation even when EL3 is enabled. The default is ``off``
+
 Linux guest kernel configuration
 """"""""""""""""""""""""""""""""
 

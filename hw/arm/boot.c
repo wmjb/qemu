@@ -1270,10 +1270,10 @@ void arm_load_kernel(ARMCPU *cpu, MachineState *ms, struct arm_boot_info *info)
         boot_el = arm_feature(env, ARM_FEATURE_EL2) ? 2 : 1;
     }
 
-    if ((info->psci_conduit == QEMU_PSCI_CONDUIT_HVC && boot_el >= 2) ||
-        (info->psci_conduit == QEMU_PSCI_CONDUIT_SMC && boot_el == 3)) {
-        // Enable QEMU's builtin PSCI emulation even when EL3 is enabled, for Windows on ARM 32-Bit
-        // info->psci_conduit = QEMU_PSCI_CONDUIT_DISABLED;
+    if (!info->force_psci &&
+        ((info->psci_conduit == QEMU_PSCI_CONDUIT_HVC && boot_el >= 2) ||
+        (info->psci_conduit == QEMU_PSCI_CONDUIT_SMC && boot_el == 3))) {
+        info->psci_conduit = QEMU_PSCI_CONDUIT_DISABLED;
     }
 
     if (info->psci_conduit != QEMU_PSCI_CONDUIT_DISABLED) {
