@@ -1409,6 +1409,21 @@ static void create_pcie_irq_map(const MachineState *ms,
                            0x7           /* PCI irq */);
 }
 
+static void sdhci_attach_drive(DeviceState *sdhci, DriveInfo *dinfo, bool emmc)
+{
+        DeviceState *card;
+        BlockBackend *blk;
+
+        blk = dinfo ? blk_by_legacy_dinfo(dinfo) : NULL;
+
+        card = qdev_new(emmc ? TYPE_EMMC : TYPE_SD_CARD);
+
+        qdev_prop_set_drive(card, "drive", blk);
+        qdev_realize_and_unref(card,
+                               qdev_get_child_bus(DEVICE(sdhci), "sd-bus"),
+                               &error_fatal);
+}
+
 static void create_ehci(const VirtMachineState *vms)
 {
     hwaddr base = vms->memmap[VIRT_EHCI].base;
@@ -1425,26 +1440,17 @@ static void create_sdhci(const VirtMachineState *vms)
     int irq = vms->irqmap[VIRT_SDHCI];
     DeviceState *dev;
     SysBusDevice *busdev;
-    DriveInfo *di;
-    BlockBackend *blk;
-    DeviceState *carddev;
 
     dev = qdev_new(TYPE_SYSBUS_SDHCI);
     qdev_prop_set_uint64(dev, "capareg", VIRT_SDHCI_CAPABILITIES);
+    qdev_prop_set_uint8(dev, "sd-spec-version", 3);
 
     busdev = SYS_BUS_DEVICE(dev);
     sysbus_realize_and_unref(busdev, &error_fatal);
     sysbus_mmio_map(busdev, 0, base);
     sysbus_connect_irq(busdev, 0, qdev_get_gpio_in(vms->gic, irq));
 
-
-    di = drive_get(IF_SD, 0, 0);
-    blk = di ? blk_by_legacy_dinfo(di) : NULL;
-    carddev = qdev_new(TYPE_SD_CARD);
-    qdev_prop_set_drive(carddev, "drive", blk);
-    qdev_realize_and_unref(carddev, qdev_get_child_bus(dev, "sd-bus"),
-                            &error_fatal);
-
+    sdhci_attach_drive(dev, drive_get(IF_SD, 0, 0), true);
 }
 
 static void create_smmu(const VirtMachineState *vms,

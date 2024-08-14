@@ -185,10 +185,8 @@ struct VirtMachineState {
 
 #define VIRT_ECAM_ID(high) (high ? VIRT_HIGH_PCIE_ECAM : VIRT_PCIE_ECAM)
 
-/* 
- * Copied from SDHC_CAPAB_REG_DEFAULT 
- */
-#define VIRT_SDHCI_CAPABILITIES 0x057834b4
+
+#define VIRT_SDHCI_CAPABILITIES 0x180028073ff8ffbf
 
 #define TYPE_VIRT_MACHINE   MACHINE_TYPE_NAME("virt")
 OBJECT_DECLARE_TYPE(VirtMachineState, VirtMachineClass, VIRT_MACHINE)
