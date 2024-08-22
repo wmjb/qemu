@@ -14,7 +14,7 @@ jobs:
       matrix:
         include:
           - { icon: '🟦', sys: mingw64, mode: dynamic }
-          - { icon: '🟦', sys: mingw64, mode: static}
+          - { icon: '🟦', sys: mingw64, mode: static }
 
     name: 🚧${{ matrix.icon }} ${{ matrix.sys }} Build ${{ matrix.mode }}
     defaults:
@@ -112,5 +112,47 @@ jobs:
       uses: actions/upload-artifact@main
       with:
         name: QEMU (${{ matrix.mode }} build)
+        path: ${{ github.workspace }}/artifacts
+        compression-level: 9
+
+  build_linux:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x64 }
+          - { arch: aarch64 }
+
+    name: Build Linux ${{ matrix.arch }}
+
+    steps:
+
+    - name: '🧰 Checkout'
+      uses: actions/checkout@main
+
+    - name: 'Install software packages'
+      run: sudo apt-get install libglib2.0-dev libfdt-dev libpixman-1-dev ninja-build libaio-dev libbluetooth-dev libcapstone-dev libbrlapi-dev libbz2-dev libcap-ng-dev libcurl4-gnutls-dev libgtk-3-dev libibverbs-dev libjpeg8-dev  libnuma-dev librbd-dev librdmacm-dev libsasl2-dev libsdl2-dev libseccomp-dev libsnappy-dev libssh-dev libvde-dev libvdeplug-dev libvte-2.91-dev libxen-dev liblzo2-dev valgrind xfslibs-dev libnfs-dev libiscsi-dev
+
+    - name: 'Install cross build gcc'
+      if: ${{ matrix.arch == 'aarch64' }}
+      run: sudo apt-get install gcc-aarch64-linux-gnu
+
+    - name: '🚧 Build QEMU Linux (arm & aarch64) ${{ matrix.mode }}'
+      env:
+        arg: ${{ matrix.arch == 'x64' && '--enable-gtk --enable-sdl --enable-avx2 --target-list=arm-softmmu,aarch64-softmmu' || '--enable-gtk --enable-sdl --enable-avx2 --enable-kvm --target-list=arm-softmmu,aarch64-softmmu --cross-prefix=aarch64-linux-gnu-' }}
+      run: |
+          ./configure ${{ env.arg }}
+          make -j16
+
+    - name: Prepare Artifacts
+      run: |
+          mkdir artifacts
+          mv build/* artifacts/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@main
+      with:
+        name: QEMU Linux (${{ matrix.arch }} build)
         path: ${{ github.workspace }}/artifacts
         compression-level: 9
