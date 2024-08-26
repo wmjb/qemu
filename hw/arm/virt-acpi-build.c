@@ -620,7 +620,51 @@ build_egit(GArray *table_data, BIOSLinker *linker, VirtMachineState *vms)
     build_append_int_noprefix(table_data, 0, 4); /* Reserved */
     acpi_table_end(linker, &table);
 }
+/* Core System Resource Table (CSRT) */
+static void
+build_csrt(GArray *table_data, BIOSLinker *linker, VirtMachineState* vms)
+{
+       AcpiTable table = { .sig = "CSRT", .rev = 0, .oem_id = vms->oem_id,
+                            .oem_table_id = vms->oem_table_id };
 
+    int length = 24 + 12 + 12;
+    acpi_table_begin(&table, table_data);
+
+    /* CSRT length */
+    build_append_int_noprefix(table_data, length, 4);
+    /* Vendor identifier */
+    build_append_int_noprefix(table_data, 0x2E4D5241, 4); // .MRA / ARM.
+    /* Sub-vendor identifier */
+    build_append_int_noprefix(table_data, 0, 4);
+    /* Device ID */
+    build_append_int_noprefix(table_data, 1, 2);
+    /* Subdevice ID */
+    build_append_int_noprefix(table_data, 0, 2);
+    /* Revision */
+    build_append_int_noprefix(table_data, 0, 2);
+    /* Reserved */
+    build_append_int_noprefix(table_data, 0, 2);
+    /* Shared info length */
+    build_append_int_noprefix(table_data, 0, 4);
+    
+    /* Resource descriptor length */
+    build_append_int_noprefix(table_data, 12, 4);
+    /* Resource type: timer */
+    build_append_int_noprefix(table_data, 2, 2);
+    /* Resource subtype: timer */
+    build_append_int_noprefix(table_data, 0, 2);
+    /* Unique identifier */
+    build_append_int_noprefix(table_data, 0, 4);
+    /* Resource descriptor length */
+    build_append_int_noprefix(table_data, 12, 4);
+    /* Resource type: timer */
+    build_append_int_noprefix(table_data, 2, 2);
+    /* Resource subtype: timer */
+    build_append_int_noprefix(table_data, 0, 2);
+    /* Unique identifier */
+    build_append_int_noprefix(table_data, 1, 4);
+    acpi_table_end(linker, &table);
+}
 /*
  * ACPI spec, Revision 6.5
  * 5.2.25 Generic Timer Description Table (GTDT)
@@ -1008,7 +1052,7 @@ void virt_acpi_build(VirtMachineState *vms, AcpiBuildTables *tables)
     dsdt = tables_blob->len;
     build_dsdt(tables_blob, tables->linker, vms);
 
-    /* FADT MADT PPTT EGIT GTDT MCFG SPCR DBG2 pointed to by RSDT */
+    /* FADT MADT PPTT EGIT CSRT GTDT MCFG SPCR DBG2 pointed to by RSDT */
     acpi_add_table(table_offsets, tables_blob);
     build_fadt_rev6(tables_blob, tables->linker, vms, dsdt);
 
@@ -1023,6 +1067,9 @@ void virt_acpi_build(VirtMachineState *vms, AcpiBuildTables *tables)
 
     acpi_add_table(table_offsets, tables_blob);
     build_egit(tables_blob, tables->linker, vms);
+    
+    acpi_add_table(table_offsets, tables_blob);
+    build_csrt(tables_blob, tables->linker, vms);
 
     acpi_add_table(table_offsets, tables_blob);
     build_gtdt(tables_blob, tables->linker, vms);
