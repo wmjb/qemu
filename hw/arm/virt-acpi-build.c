@@ -817,7 +817,7 @@ build_madt(GArray *table_data, BIOSLinker *linker, VirtMachineState *vms)
 
     /* 5.2.12.15 GIC Distributor Structure */
     build_append_int_noprefix(table_data, 0xC, 1); /* Type */
-    build_append_int_noprefix(table_data, 24, 1);  /* Length */
+    build_append_int_noprefix(table_data, 18, 1);  /* Length */
     build_append_int_noprefix(table_data, 0, 2);   /* Reserved */
     build_append_int_noprefix(table_data, 0, 4);   /* GIC ID */
     /* Physical Base Address */
@@ -842,7 +842,7 @@ build_madt(GArray *table_data, BIOSLinker *linker, VirtMachineState *vms)
 
         /* 5.2.12.14 GIC Structure */
         build_append_int_noprefix(table_data, 0xB, 1);  /* Type */
-        build_append_int_noprefix(table_data, 80, 1);   /* Length */
+        build_append_int_noprefix(table_data, 28, 1);   /* Length */
         build_append_int_noprefix(table_data, 0, 2);    /* Reserved */
         build_append_int_noprefix(table_data, i, 4);    /* GIC ID */
         build_append_int_noprefix(table_data, i, 4);    /* ACPI Processor UID */
@@ -855,17 +855,17 @@ build_madt(GArray *table_data, BIOSLinker *linker, VirtMachineState *vms)
         build_append_int_noprefix(table_data, 0, 8); /* Parked Address */
         /* Physical Base Address */
         build_append_int_noprefix(table_data, physical_base_address, 8);
-        build_append_int_noprefix(table_data, gicv, 8); /* GICV */
-        build_append_int_noprefix(table_data, gich, 8); /* GICH */
+ //       build_append_int_noprefix(table_data, gicv, 8); /* GICV */
+ //       build_append_int_noprefix(table_data, gich, 8); /* GICH */
         /* VGIC Maintenance interrupt */
-        build_append_int_noprefix(table_data, vgic_interrupt, 4);
-        build_append_int_noprefix(table_data, 0, 8);    /* GICR Base Address*/
+ //       build_append_int_noprefix(table_data, vgic_interrupt, 4);
+ //       build_append_int_noprefix(table_data, 0, 8);    /* GICR Base Address*/
         /* MPIDR */
-        build_append_int_noprefix(table_data, arm_cpu_mp_affinity(armcpu), 8);
+ //       build_append_int_noprefix(table_data, arm_cpu_mp_affinity(armcpu), 8);
         /* Processor Power Efficiency Class */
-        build_append_int_noprefix(table_data, 0, 1);
+ //       build_append_int_noprefix(table_data, 0, 1);
         /* Reserved */
-        build_append_int_noprefix(table_data, 0, 3);
+ //       build_append_int_noprefix(table_data, 0, 3);
     }
 
     if (vms->gic_version != VIRT_GIC_VERSION_2) {
